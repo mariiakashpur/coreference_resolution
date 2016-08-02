@@ -1,4 +1,4 @@
-Coreference Resolution programming task
+# Coreference Resolution program based on the Soon et al. (2001) machine learning approach
 Author: Mariia Kashpur
 
 To start the program, please run the "main.py" script. Please provide path to the training corpus and path to the test corpus (in CoNLL format) as arguments. This will create the training and test instances files ("training_file_mallet.txt" and "test_file_mallet.txt") in the current folder. The number of training and test instances will be printed on the screen.
