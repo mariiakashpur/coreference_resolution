@@ -15,38 +15,32 @@ class Sentence(object):
 		np_bracket_counter = 0
 		embedded_counter = 0
 
-		# ----------- 	REGEX COMPILATION -----------------------
-		# digit = re.compile(r'\d+')
-		# complete_np = re.compile(r'^\(NP\*\)+$')
-		# opening_bracket = re.compile(r'\(')
-		# closing_bracket = re.compile(r'\)')
-		# -------------------------------------------------------
 		sentence_number = self.sentence_number
 
 		for token in self.tokens:
 			# look for possessive pronouns - in Token class
 			if token.is_possesive_pronoun():
 				# add NP 
-				self.nps.append(NP(token, sentence_number, token.chain_number_column))
+				self.nps.append(NP(token, sentence_number, token.line_number, token.chain_number_column))
 			else:
 				# if we haven't seen open NP's yet
 				if not np_bracket_counter:
 					# look for (NP)
 					if token.is_complete_np():
-						self.nps.append(NP(token, sentence_number, token.chain_number_column))
+						self.nps.append(NP(token, sentence_number, token.line_number, token.chain_number_column))
 					else:
 						np_bracket_counter = token.count_np_open_brackets()
 						# if several NP's start on same line - mistake in getting coreference chain numbers; here try to avoid that
 						if np_bracket_counter == 1:
 							# add coreference chain number
-							current_np = NP(token, sentence_number, token.chain_number_column)
+							current_np = NP(token, sentence_number, token.line_number, token.chain_number_column)
 						else:
 							# DON'T add coreference chain number
-							current_np = NP(token, sentence_number)
+							current_np = NP(token, sentence_number, token.line_number)
 
 				else:
-					if token.is_complete_np(): # !!!!!!!! DO WE NEED TO DO IT AGAIN BOTH IN IF AND IN ELSE???
-						self.nps.append(NP(token, sentence_number, token.chain_number_column))
+					if token.is_complete_np():
+						self.nps.append(NP(token, sentence_number, token.line_number, token.chain_number_column))
 					current_np.add_token(token)
 					# add all found opening brackets
 					np_bracket_counter += token.count_open_brackets()
@@ -54,7 +48,7 @@ class Sentence(object):
 					# ------ 	IF EMBEDDED NP'S INSIDE CURRENT NP BUT NOT ON SAME LINE ----------
 					if not embedded_counter:
 						if token.is_embedded_np():
-							embedded_np = NP(token, sentence_number, token.chain_number_column)
+							embedded_np = NP(token, sentence_number, token.line_number, token.chain_number_column)
 							embedded_counter = 1
 					else:
 						embedded_np.add_token(token)
@@ -73,6 +67,8 @@ class Sentence(object):
 						if embedded_counter <= 0:
 							embedded_counter = 0
 							self.nps.append(embedded_np)
+		
+
 		return self.nps
 
 

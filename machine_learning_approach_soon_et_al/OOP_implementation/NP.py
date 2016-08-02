@@ -1,10 +1,11 @@
 import re
 
 class NP(object):
-	def __init__(self, token, sentence_number, chain_number=""):
+	def __init__(self, token, sentence_number, line_number, chain_number=""):
 		self.tokens = [token]
 		self.sentence_number = sentence_number
 		self.chain_number = chain_number
+		self.line_number = line_number
 		
 	def add_token(self, token):
 		self.tokens.append(token)

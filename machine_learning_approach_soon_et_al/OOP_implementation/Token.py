@@ -1,7 +1,7 @@
 import re
 
 class Token(object):
-	def __init__(self, string, tag, parse, chain_number_column):
+	def __init__(self, string, tag, parse, chain_number_column, line_number):
 		if string == "I":
 			string = "i"
 		self.string = string
@@ -11,6 +11,7 @@ class Token(object):
 			self.chain_number_column = ""
 		else:
 			self.chain_number_column = chain_number_column
+		self.line_number = line_number
 
 
 	def is_definite_determiner(self):

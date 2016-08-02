@@ -13,12 +13,12 @@ class Corpus(object):
 		self.instances = {}
 
 		with open(filepath) as f:
-			for line in f:
+			for num, line in enumerate(f):
 				# check if we have a valid token line
 				if line[0].isalpha():
 					token_line = line.split()
 					# create new Token object
-					token = Token(token_line[3], token_line[4], token_line[5], token_line[-1].strip(")").strip("(")) 
+					token = Token(token_line[3], token_line[4], token_line[5], token_line[-1].strip(")").strip("("), num) 
 					sentence.add_token(token)
 				# check if line is empty - we reached end of current sentence
 				elif not line.strip(): 
@@ -27,26 +27,10 @@ class Corpus(object):
 					sentence = Sentence(sentence_number)
 
 
-
 	def generate_instances(self):
 		""" Return training instances extracted from list of all NP's.
 		Instances stored in such a structure: {chain_num: [[np, its incorrect np], 
 		                                                   [np, its incorrect np1, its incorrect np2]]}"""
-		# last_number = None
-		# for sent in self.sents:
-		# 	for np in sent.extract_nps():
-				# if np.chain_number:
-				# 	number = np.chain_number
-				# 	if number in self.instances:
-				# 		self.instances[number].append([np])
-				# 		last_number = None
-				# 	else:
-				# 		self.instances[number] = [[np]]
-				# 		last_number = number
-				# else:
-				# 	if last_number:
-				# 		# add "incorrect" np 
-				# 		self.instances[last_number][-1].append(np)
 		last_number = []
 		tmp_instances = {}
 		for sent in self.sents:
@@ -68,7 +52,6 @@ class Corpus(object):
 						tmp_instances[i].append(np)
 		
 
-
 	def generate_pos_pairs(self):
 		""" From all instances, extract positive pairs in a list of NP_pair objects. """
 		self.pos_pairs = []
@@ -86,53 +69,52 @@ class Corpus(object):
 	def generate_neg_pairs(self):
 		""" From all instances, extract negative pairs in a list of NP_pair objects. To create pairs, combine non-related NP's in between an instance 
 		of coref chain and next instance of this chain. """
+		i = 0
 		self.neg_pairs = []
 		if not self.instances:
 			self.generate_instances()
-		# print self.instances
 		for chain_number in self.instances:
 			number_instances = len(self.instances[chain_number])
 			if number_instances > 1:
 				for k in range(number_instances - 1):
 					for np in self.instances[chain_number][k][1:]:
 						self.neg_pairs.append(NP_pair(np, self.instances[chain_number][k + 1][0], False))
+						i += 1
+			if i > 70000:
+				break
 		return self.neg_pairs
 
 
 	def create_mallet_file(self, filepath):
+		"""Create a training file for Mallet classifier"""
 		all_pairs = self.pos_pairs + self.neg_pairs
 		with open(filepath, 'w') as f:
-			for j, pair in enumerate(all_pairs):
+			for pair in all_pairs:
 				two_nps = []
 				for np in pair.pair:
 					tokens = []
+					tokens.append(str(np.line_number))
 					for token in np.tokens:
 						tokens.append(token.string)
 					two_nps.append("|".join(tokens))
 				concat = ">".join(two_nps)
-				f.write(str(j) + concat + " " + pair.get_label() + " " + " ".join(pair.generate_features()) + "\n") 
+				f.write(concat + " " + pair.get_label() + " " + " ".join(pair.generate_features()) + "\n") 
 
 
 	def create_test_file(self, filepath):
+		"""Create a test file for Mallet classifier"""
 		all_pairs = self.pos_pairs + self.neg_pairs
 		with open(filepath, 'w') as f:
-			for j, pair in enumerate(all_pairs):
+			for pair in all_pairs:
 				two_nps = []
 				for np in pair.pair:
 					tokens = []
+					tokens.append(str(np.line_number))
 					for token in np.tokens:
 						tokens.append(token.string)
 					two_nps.append("|".join(tokens))
 				concat = ">".join(two_nps)
-				f.write(str(j) + concat + " " + " ".join(pair.generate_features()) + "\n") 
-
-
-
-# a=[[1,2],[3,4]]
-
-
-# [x for b in a for x in b]
-# [b for b in a]
+				f.write(concat + " " + " ".join(pair.generate_features()) + "\n") 
 
 
 

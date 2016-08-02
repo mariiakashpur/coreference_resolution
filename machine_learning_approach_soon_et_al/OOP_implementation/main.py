@@ -1,25 +1,31 @@
 from Corpus import Corpus
 from NP_pair import NP_pair
-
-# dummy_corpus = Corpus("../data/dummy.txt")
-training_corpus = Corpus("../data/ontonotes-train.conll")
-# test_corpus = Corpus("../data/ontonotes-test.conll")
-# lala_corpus = Corpus("../data/lala.txt")
-
-# dummy_corpus.create_mallet_file("dummy-mallet.txt")
+import sys
 
 
-pos = training_corpus.generate_pos_pairs()
-neg = training_corpus.generate_neg_pairs()
-# print len(pos)
-# print len(neg)
-training_corpus.create_mallet_file("training-mallet.txt")
+def main():
+
+	if len(sys.argv) != 3:
+		print "Please provide paths to train and test corpora!"
+	else:
+
+		training_corpus = Corpus(sys.argv[1])
+		test_corpus = Corpus(sys.argv[2])
+		len_pos_train = len(training_corpus.generate_pos_pairs())
+		len_neg_train = len(training_corpus.generate_neg_pairs())
+		training_corpus.create_mallet_file("training_file_mallet.txt")
+
+		len_test = len(test_corpus.generate_pos_pairs()) + len(test_corpus.generate_neg_pairs())
+		test_corpus.create_test_file("test_file_mallet.txt")
+
+
+		print "There are " + str(len_pos_train) + " positive training instances and " + str(len_neg_train) + " negative training instances."
+		print "There are " + str(len_test) + " test instances."
 
 
 
-# test_corpus.create_test_file("test-mallet.txt")
-
-
+if __name__ == '__main__':
+    main()
 
 
 
